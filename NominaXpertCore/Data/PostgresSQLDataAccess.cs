@@ -53,7 +53,8 @@ namespace ControlEscolar.Data
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warn(ex, "No se pudo obtener la cadena de conexión desde ConfigurationManager");
+                    // No usar logger aquí para evitar problemas de inicialización
+                    Console.WriteLine($"PostgreSQLDataAccess: No se pudo obtener la cadena de conexión desde ConfigurationManager: {ex.Message}");
                 }
 
                 // Si llegamos aquí, no hay cadena de conexión disponible
@@ -62,7 +63,8 @@ namespace ControlEscolar.Data
             set
             {
                 _connectionString = value;
-                _logger.Info($"Cadena de conexión establecida: {(!string.IsNullOrEmpty(value) ? "CONFIGURADA" : "NULL")}");
+                // No usar logger en setter estático para evitar problemas de inicialización
+                Console.WriteLine($"PostgreSQLDataAccess: Cadena de conexión establecida: {(!string.IsNullOrEmpty(value) ? "CONFIGURADA" : "NULL")}");
             }
         }
 
@@ -97,16 +99,16 @@ namespace ControlEscolar.Data
                 if (string.IsNullOrEmpty(connectionString))
                 {
                     var errorMsg = "La cadena de conexión no está configurada. Asegúrate de establecer PostgreSQLDataAccess.ConnectionString antes de usar la clase.";
-                    _logger.Fatal(errorMsg);
+                    Console.WriteLine($"PostgreSQLDataAccess ERROR: {errorMsg}");
                     throw new InvalidOperationException(errorMsg);
                 }
 
                 _connection = new NpgsqlConnection(connectionString);
-                _logger.Info("Instancia de acceso a datos creada correctamente");
+                Console.WriteLine("PostgreSQLDataAccess: Instancia de acceso a datos creada correctamente");
             }
             catch (Exception ex)
             {
-                _logger.Fatal(ex, "Error al inicializar el acceso a la base de datos");
+                Console.WriteLine($"PostgreSQLDataAccess ERROR: Error al inicializar el acceso a la base de datos: {ex.Message}");
                 throw;
             }
         }
