@@ -291,5 +291,16 @@ namespace API_NominaXpert
                 return StatusCode(500, "Error interno del servidor al procesar la solicitud");
             }
         }
+
+        [HttpGet("health")]
+        public IActionResult HealthCheck()
+        {
+            return Ok(new
+            {
+                status = "API funcionando",
+                timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                message = "Conexión exitosa"
+            });
+        }
     }
 }
