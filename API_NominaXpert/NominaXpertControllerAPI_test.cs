@@ -302,5 +302,6 @@ namespace API_NominaXpert
                 message = "Conexión exitosa"
             });
         }
+
     }
 }
