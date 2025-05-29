@@ -6,17 +6,17 @@ namespace API_NominaXpert
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NominasControllerAPI_Test : ControllerBase
+    public class NominaXpertControllerAPI_test : ControllerBase
     {
         private readonly NominasController _nominasController;
-        private readonly ILogger<NominasControllerAPI_Test> _logger;
+        private readonly ILogger<NominaXpertControllerAPI_test> _logger;
 
         /// <summary>
         /// Constructor del controlador API para nóminas
         /// </summary>
         /// <param name="nominasController">Instancia del controlador de nóminas</param>
         /// <param name="logger">Logger para el controlador API</param>
-        public NominasControllerAPI_Test(NominasController nominasController, ILogger<NominasControllerAPI_Test> logger)
+        public NominaXpertControllerAPI_test(NominasController nominasController, ILogger<NominaXpertControllerAPI_test> logger)
         {
             _nominasController = nominasController;
             _logger = logger;
