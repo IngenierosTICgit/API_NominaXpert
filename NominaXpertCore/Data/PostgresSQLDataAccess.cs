@@ -94,9 +94,14 @@ namespace ControlEscolar.Data
         {
             try
             {
+<<<<<<< HEAD
+                _logger = LoggingManager.GetLogger("ControlEscolar.Data.PostgresSQLDataAccess");
+                if (string.IsNullOrEmpty(ConnectionString))
+=======
                 var connectionString = ConnectionString;
 
                 if (string.IsNullOrEmpty(connectionString))
+>>>>>>> 7cb25e574f2b08088b8bbf0a72b6e898de023394
                 {
                     var errorMsg = "La cadena de conexión no está configurada. Asegúrate de establecer PostgreSQLDataAccess.ConnectionString antes de usar la clase.";
                     Console.WriteLine($"PostgreSQLDataAccess ERROR: {errorMsg}");
@@ -108,7 +113,12 @@ namespace ControlEscolar.Data
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
+                Console.WriteLine($"Error inicializando logger: {ex.Message}");
+                _logger.Fatal(ex, "Error al inicializar el acceso a la base de datos");
+=======
                 Console.WriteLine($"PostgreSQLDataAccess ERROR: Error al inicializar el acceso a la base de datos: {ex.Message}");
+>>>>>>> 7cb25e574f2b08088b8bbf0a72b6e898de023394
                 throw;
             }
         }

@@ -29,8 +29,21 @@ namespace NominaXpertCore.Controller
         private readonly RegistroJornadaController _registroJornadaController; // Para consultar las horas trabajadas
 
         // Logger para la clase
-        private static readonly Logger _logger = LoggingManager.GetLogger("NominaXpert.Controller.NominasController");
+        private static readonly Logger _logger;
 
+        // Constructor estático para inicializar el logger
+        static NominasController()
+        {
+            try
+            {
+                _logger = LoggingManager.GetLogger("NominaXpert.Controller.NominasController");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inicializando logger en NominasController: {ex.Message}");
+                throw;
+            }
+        }
         public NominasController()
         {
             try
