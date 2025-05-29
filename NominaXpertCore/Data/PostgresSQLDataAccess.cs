@@ -9,7 +9,6 @@ using ControlEscolar.Utilities;
 using NLog; //Paqueteria en la que se llaman los log 
 using Npgsql;
 
-
 namespace ControlEscolar.Data
 {
     /// <summary>
@@ -19,73 +18,53 @@ namespace ControlEscolar.Data
     public class PostgresSQLDataAccess
     {
         //Logger usando el LoggingManager centralizado
-        // Logger usando el LoggingManager centralizado (se inicializa en el constructor)
-        private static Logger? _logger;
+        private static readonly Logger _logger;
 
-        //Cadena de conexión desde App.config
-        // private static readonly string _ConnectionString = ConfigurationManager.ConnectionStrings["ConexionBD"].ConnectionString;
         // Campo estático para almacenar la cadena de conexión
         private static string _connectionString;
 
-        private NpgsqlConnection _connection; //
-        private static PostgresSQLDataAccess? _instance; //Esa instancia de objeto completo que trabaja el acceso a datos
+        private NpgsqlConnection _connection;
+        private static PostgresSQLDataAccess? _instance;
+
+        // Constructor estático para inicializar el logger
+        static PostgresSQLDataAccess()
+        {
+            try
+            {
+                _logger = LoggingManager.GetLogger("ControlEscolar.Data.PostgresSQLDataAccess");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inicializando logger: {ex.Message}");
+                throw;
+            }
+        }
 
         // Propiedad para establecer la cadena de conexión desde el API
         public static string ConnectionString
         {
             get
             {
-                // Si ya fue establecida explícitamente, usarla
-                if (!string.IsNullOrEmpty(_connectionString))
+                if (string.IsNullOrEmpty(_connectionString))
                 {
-                    return _connectionString;
-                }
-
-                // Si no, intentar obtenerla desde ConfigurationManager como fallback
-                try
-                {
-                    var configConnection = ConfigurationManager.ConnectionStrings["ConexionBD"]?.ConnectionString;
-                    if (!string.IsNullOrEmpty(configConnection))
+                    try
                     {
-                        _connectionString = configConnection;
-                        return _connectionString;
+                        // Intenta obtener desde ConfigurationManager (Windows Forms)
+                        _connectionString = ConfigurationManager.ConnectionStrings["ConexionBD"]?.ConnectionString;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Warn(ex, "No se pudo obtener la cadena de conexión desde ConfigurationManager");
                     }
                 }
-                catch (Exception ex)
-                {
-                    // No usar logger aquí para evitar problemas de inicialización
-                    Console.WriteLine($"PostgreSQLDataAccess: No se pudo obtener la cadena de conexión desde ConfigurationManager: {ex.Message}");
-                }
-
-                // Si llegamos aquí, no hay cadena de conexión disponible
-                return _connectionString; // Puede ser null
+                return _connectionString;
             }
             set
             {
                 _connectionString = value;
-                // No usar logger en setter estático para evitar problemas de inicialización
                 Console.WriteLine($"PostgreSQLDataAccess: Cadena de conexión establecida: {(!string.IsNullOrEmpty(value) ? "CONFIGURADA" : "NULL")}");
             }
         }
-
-        ///// <summary>
-        ///// Constructor privado para implementar el patrón Singletón
-        ///// </summary>
-        //private PostgresSQLDataAccess()
-        //{
-        //    try
-        //    {
-        //        _logger = LoggingManager.GetLogger("NominaXpert.Data.PostgresSQLDataAccess");
-
-        //        _connection = new NpgsqlConnection(_ConnectionString);
-        //        _logger?.Info("Instancia de acceso a datos creada correctamente");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger?.Fatal(ex, "Error al inicializar el acceso a la base de datos");
-        //        throw;
-        //    }
-        //}
 
         /// <summary>
         /// Constructor privado para implementar el patrón Singleton
@@ -94,36 +73,22 @@ namespace ControlEscolar.Data
         {
             try
             {
-<<<<<<< HEAD
-                _logger = LoggingManager.GetLogger("ControlEscolar.Data.PostgresSQLDataAccess");
                 if (string.IsNullOrEmpty(ConnectionString))
-=======
-                var connectionString = ConnectionString;
-
-                if (string.IsNullOrEmpty(connectionString))
->>>>>>> 7cb25e574f2b08088b8bbf0a72b6e898de023394
                 {
-                    var errorMsg = "La cadena de conexión no está configurada. Asegúrate de establecer PostgreSQLDataAccess.ConnectionString antes de usar la clase.";
-                    Console.WriteLine($"PostgreSQLDataAccess ERROR: {errorMsg}");
-                    throw new InvalidOperationException(errorMsg);
+                    throw new InvalidOperationException("La cadena de conexión no está configurada. Asegúrate de establecer PostgreSQLDataAccess.ConnectionString antes de usar la clase.");
                 }
 
-                _connection = new NpgsqlConnection(connectionString);
-                Console.WriteLine("PostgreSQLDataAccess: Instancia de acceso a datos creada correctamente");
+                _connection = new NpgsqlConnection(ConnectionString);
+                _logger.Info("Instancia de acceso a datos creada correctamente");
             }
             catch (Exception ex)
             {
-<<<<<<< HEAD
-                Console.WriteLine($"Error inicializando logger: {ex.Message}");
                 _logger.Fatal(ex, "Error al inicializar el acceso a la base de datos");
-=======
-                Console.WriteLine($"PostgreSQLDataAccess ERROR: Error al inicializar el acceso a la base de datos: {ex.Message}");
->>>>>>> 7cb25e574f2b08088b8bbf0a72b6e898de023394
                 throw;
             }
         }
 
-        public static PostgresSQLDataAccess GetInstance() //se instancio la base de datos
+        public static PostgresSQLDataAccess GetInstance()
         {
             if (_instance == null)
             {
@@ -135,11 +100,11 @@ namespace ControlEscolar.Data
         /// <summary>
         /// Establece la conexion con la base de datos
         /// </summary>
-        public bool Connect() //abre la base de datos
+        public bool Connect()
         {
             try
             {
-                if (_connection.State != ConnectionState.Open) //
+                if (_connection.State != ConnectionState.Open)
                 {
                     _connection.Open();
                     _logger.Info("Conexión a la base de datos establecida correctamente");
@@ -153,44 +118,20 @@ namespace ControlEscolar.Data
             }
         }
 
-        public bool Disconnect() //cierra la base de datos
+        public bool Disconnect()
         {
             try
             {
                 if (_connection.State == ConnectionState.Open)
                 {
                     _connection.Close();
-                    _logger.Info("Conexión de la base de datos establecida correctamente");
+                    _logger.Info("Conexión de la base de datos cerrada correctamente");
                 }
                 return true;
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, "Error al cerrar la conexión");
-                throw;
-            }
-        }
-
-        public DataTable ExecuteQuery(string query, params NpgsqlParameter[] parameters)
-        {
-            DataTable dataTable = new DataTable();
-
-            try
-            {
-                _logger.Info($"Ejecutando consulta en la base de datos: {query}");
-                using (NpgsqlCommand command = CreateCommand(query, parameters))
-                {
-                    using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(command))
-                    {
-                        adapter.Fill(dataTable); //Llenar el DataTable con los resultados de la consulta
-                        _logger.Debug($"Consulta ejecutada correctamente, {dataTable.Rows.Count} filas obtenidas");
-                    }
-                }
-                return dataTable;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error al ejecutar la consulta en la base de datos");
                 throw;
             }
         }
@@ -206,7 +147,7 @@ namespace ControlEscolar.Data
                 {
                     using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(command))
                     {
-                        adapter.Fill(dataTable); //Llenar el DataTable con los resultados de la consulta
+                        adapter.Fill(dataTable);
                         _logger.Debug($"Consulta ejecutada correctamente, {dataTable.Rows.Count} filas obtenidas");
                     }
                 }
@@ -225,7 +166,7 @@ namespace ControlEscolar.Data
             if (parameters != null)
             {
                 command.Parameters.AddRange(parameters);
-                foreach (NpgsqlParameter param in parameters) //Si viene un dato null pon tal cual el nulo 
+                foreach (NpgsqlParameter param in parameters)
                 {
                     _logger.Debug($"Parámetro: {param.ParameterName} = {param.Value ?? "NULL"}");
                 }
@@ -252,7 +193,6 @@ namespace ControlEscolar.Data
             }
         }
 
-        //Execute scalar siempre sera un unico dato, para recibir el id. 
         public object? ExecuteScalar(string query, params NpgsqlParameter[] parameters)
         {
             try
@@ -271,8 +211,6 @@ namespace ControlEscolar.Data
                 throw;
             }
         }
-
-        //el tipo object es muy generico porque no sé que será ese parametro
 
         public NpgsqlParameter CreateParameter(string name, object value)
         {
