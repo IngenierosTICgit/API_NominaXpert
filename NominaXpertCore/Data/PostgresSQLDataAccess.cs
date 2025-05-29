@@ -35,21 +35,35 @@ namespace ControlEscolar.Data
         {
             get
             {
-                if (string.IsNullOrEmpty(_connectionString))
+                // Si ya fue establecida explícitamente, usarla
+                if (!string.IsNullOrEmpty(_connectionString))
                 {
-                    try
+                    return _connectionString;
+                }
+
+                // Si no, intentar obtenerla desde ConfigurationManager como fallback
+                try
+                {
+                    var configConnection = ConfigurationManager.ConnectionStrings["ConexionBD"]?.ConnectionString;
+                    if (!string.IsNullOrEmpty(configConnection))
                     {
-                        // Intenta obtener desde ConfigurationManager (Windows Forms)
-                        _connectionString = ConfigurationManager.ConnectionStrings["ConexionBD"]?.ConnectionString;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Warn(ex, "No se pudo obtener la cadena de conexión desde ConfigurationManager");
+                        _connectionString = configConnection;
+                        return _connectionString;
                     }
                 }
-                return _connectionString;
+                catch (Exception ex)
+                {
+                    _logger.Warn(ex, "No se pudo obtener la cadena de conexión desde ConfigurationManager");
+                }
+
+                // Si llegamos aquí, no hay cadena de conexión disponible
+                return _connectionString; // Puede ser null
             }
-            set { _connectionString = value; }
+            set
+            {
+                _connectionString = value;
+                _logger.Info($"Cadena de conexión establecida: {(!string.IsNullOrEmpty(value) ? "CONFIGURADA" : "NULL")}");
+            }
         }
 
         ///// <summary>
@@ -71,16 +85,23 @@ namespace ControlEscolar.Data
         //    }
         //}
 
+        /// <summary>
+        /// Constructor privado para implementar el patrón Singleton
+        /// </summary>
         private PostgresSQLDataAccess()
         {
             try
             {
-                if (string.IsNullOrEmpty(ConnectionString))
+                var connectionString = ConnectionString;
+
+                if (string.IsNullOrEmpty(connectionString))
                 {
-                    throw new InvalidOperationException("La cadena de conexión no está configurada. Asegúrate de establecer PostgreSQLDataAccess.ConnectionString antes de usar la clase.");
+                    var errorMsg = "La cadena de conexión no está configurada. Asegúrate de establecer PostgreSQLDataAccess.ConnectionString antes de usar la clase.";
+                    _logger.Fatal(errorMsg);
+                    throw new InvalidOperationException(errorMsg);
                 }
 
-                _connection = new NpgsqlConnection(ConnectionString);
+                _connection = new NpgsqlConnection(connectionString);
                 _logger.Info("Instancia de acceso a datos creada correctamente");
             }
             catch (Exception ex)

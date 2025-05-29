@@ -1,24 +1,31 @@
-using ControlEscolar.Data; //using NominaXpertCore.Data;
+using ControlEscolar.Data;
 using NominaXpertCore.Controller;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar la cadena de conexión para PostgreSQLDataAccess
+// DEBUG: Verificar la cadena de conexión
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine($"=== CONNECTION STRING DEBUG ===");
+Console.WriteLine($"Connection String obtenida: {(string.IsNullOrEmpty(connectionString) ? "NULL/VACIA" : "ENCONTRADA")}");
+Console.WriteLine($"Longitud: {connectionString?.Length ?? 0}");
 
-PostgresSQLDataAccess.ConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("ERROR CRÍTICO: No se encontró cadena de conexión");
+    throw new InvalidOperationException("No se encontró cadena de conexión");
+}
 
-// Add services to the container.
+// Establecer la cadena de conexión ANTES de registrar servicios
+PostgresSQLDataAccess.ConnectionString = connectionString;
+Console.WriteLine("Cadena de conexión establecida en PostgresSQLDataAccess");
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//Agregamos el controller de NOMINAS
 builder.Services.AddScoped<NominasController>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -26,9 +33,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
 
+Console.WriteLine("=== APLICACIÓN INICIADA ===");
 app.Run();
-
-
