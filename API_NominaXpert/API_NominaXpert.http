@@ -1,0 +1,6 @@
+@API_NominaXpert_HostAddress = http://localhost:5132
+
+GET {{API_NominaXpert_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
